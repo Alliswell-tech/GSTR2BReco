@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 from io import BytesIO
+import os # <--- This line is essential to read files from your repository
 
 st.set_page_config(page_title="GST Reconciliation Tool", layout="wide")
 st.title("🧾 GSTR-2B vs Tally Reconciliation Tool")
@@ -20,7 +21,7 @@ with st.sidebar:
     - Dates must be in `DD-MM-YYYY` format
     - Values must be numeric (no commas or symbols)
     - GSTIN must be valid and 15-digit
-    
+
     ### ⚠️ Matching Logic
     We match records based on:
     1. **Invoice Number**
@@ -28,54 +29,46 @@ with st.sidebar:
     3. **Date**
     4. **Taxable Value**
 
-    If all match → Sheet 1  
-    If only value differs → Sheet 4  
-    If Invoice Number matches, but GSTIN or Date differs → Sheet 5  
-    If not found at all → Sheet 2 or 3  
+    If all match → Sheet 1
+    If only value differs → Sheet 4
+    If Invoice Number matches, but GSTIN or Date differs → Sheet 5
+    If not found at all → Sheet 2 or 3
     """)
-    
+
     st.markdown("---")
     st.markdown("📥 Download Sample Templates")
 
     col1, col2 = st.columns(2)
-    with col1:
-        # For demonstration, creating dummy files in memory
-        dummy_gstr2b_data = {
-            'S.No': [1, 2, 3, 4],
-            'GSTIN of Supplier': ['29ABCDE1234F1Z5', '29FGHIJ6789K2A7', '29KLMNO1234P3R9', '29PQRST5678U4V1'],
-            'Trade/Legal Name': ['Supplier A', 'Supplier B', 'Supplier C', 'Supplier D'],
-            'Invoice Number': ['INV001', 'INV002', 'INV003', 'INV004'],
-            'Invoice Date': ['01-04-2024', '05-04-2024', '10-04-2024', '15-04-2024'],
-            'Invoice Value': [1000.00, 1500.00, 2000.00, 2500.00],
-            'Taxable Value': [900.00, 1350.00, 1800.00, 2250.00],
-            'IGST': [50.00, 75.00, 100.00, 125.00],
-            'CGST': [25.00, 37.50, 50.00, 62.50],
-            'SGST': [25.00, 37.50, 50.00, 62.50]
-        }
-        dummy_gstr2b_df = pd.DataFrame(dummy_gstr2b_data)
-        gstr2b_template_bytes = BytesIO()
-        dummy_gstr2b_df.to_excel(gstr2b_template_bytes, index=False)
-        gstr2b_template_bytes.seek(0)
-        st.download_button("📄 GSTR2B Template", gstr2b_template_bytes.read(), file_name="gstr2b_template.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
+    # --- START OF MODIFIED SECTION FOR GSTR2B TEMPLATE ---
+    with col1:
+        gstr2b_template_path = "sample_gstr2b.xlsx" # Updated to your new file name
+        if os.path.exists(gstr2b_template_path): # Check if the file exists in your repo
+            with open(gstr2b_template_path, "rb") as file:
+                st.download_button(
+                    label="📄 GSTR2B Template",
+                    data=file.read(),
+                    file_name="sample_gstr2b.xlsx", # Make sure this matches your file name
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                )
+        else:
+            st.warning(f"Template file '{gstr2b_template_path}' not found. Ensure it's in your repository.")
+    # --- END OF MODIFIED SECTION FOR GSTR2B TEMPLATE ---
+
+    # --- START OF MODIFIED SECTION FOR TALLY TEMPLATE ---
     with col2:
-        dummy_tally_data = {
-            'S.No': [1, 2, 3, 5],
-            'GSTIN of Supplier': ['29ABCDE1234F1Z5', '29FGHIJ6789K2A7', '29KLMNO1234P3R9', '29VWXYZ9876A5B3'],
-            'Trade/Legal Name': ['Supplier A', 'Supplier B', 'Supplier C', 'Supplier E'],
-            'Invoice Number': ['INV001', 'INV002', 'INV003', 'INV005'],
-            'Invoice Date': ['01-04-2024', '05-04-2024', '11-04-2024', '20-04-2024'], # INV003 date changed for Sheet 5
-            'Invoice Value': [1000.00, 1600.00, 2000.00, 3000.00], # INV002 value changed for Sheet 4
-            'Taxable Value': [900.00, 1400.00, 1800.00, 2700.00], # INV002 value changed for Sheet 4
-            'IGST': [50.00, 80.00, 100.00, 150.00],
-            'CGST': [25.00, 40.00, 50.00, 75.00],
-            'SGST': [25.00, 40.00, 50.00, 75.00]
-        }
-        dummy_tally_df = pd.DataFrame(dummy_tally_data)
-        tally_template_bytes = BytesIO()
-        dummy_tally_df.to_excel(tally_template_bytes, index=False)
-        tally_template_bytes.seek(0)
-        st.download_button("📄 Tally Template", tally_template_bytes.read(), file_name="tally_template.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+        tally_template_path = "sample_tally.xlsx" # Updated to your new file name
+        if os.path.exists(tally_template_path): # Check if the file exists in your repo
+            with open(tally_template_path, "rb") as file:
+                st.download_button(
+                    label="📄 Tally Template",
+                    data=file.read(),
+                    file_name="sample_tally.xlsx", # Make sure this matches your file name
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                )
+        else:
+            st.warning(f"Template file '{tally_template_path}' not found. Ensure it's in your repository.")
+    # --- END OF MODIFIED SECTION FOR TALLY TEMPLATE ---
 
     st.markdown("---")
     st.markdown("© 2025 Nandeesh Balekoppadaramane")
@@ -121,7 +114,7 @@ if gstr_file and tally_file:
 
             # Ensure required fields exist after normalization
             required_columns = ['S.No', 'GSTIN of Supplier', 'Trade/Legal Name', 'Invoice Number',
-                                'Invoice Date', 'Invoice Value', 'Taxable Value', 'IGST', 'CGST', 'SGST']
+                                 'Invoice Date', 'Invoice Value', 'Taxable Value', 'IGST', 'CGST', 'SGST']
             for col in required_columns:
                 if col not in gstr2b_df.columns:
                     st.error(f"❌ Missing required column in GSTR2B file: '{col}'. Please ensure column names match the template exactly (e.g., no extra spaces, correct spelling).")
@@ -170,7 +163,7 @@ if gstr_file and tally_file:
 
             # --- Sheet 1: Matched Invoices (Full Match) ---
             sheet1_data = []
-            
+
             # Merge on the full match key
             merged_full = pd.merge(
                 gstr2b_df,
@@ -243,7 +236,7 @@ if gstr_file and tally_file:
                             'Tally Invoice Value': row['Invoice Value_Tally'],
                             'Difference: Invoice Value': round(row['Invoice Value_Tally'] - row['Invoice Value_GSTR2B'], 2),
                             'GSTR2B Taxable Value': row['Taxable Value_GSTR2B'],
-                            'Tally Taxable Value': row['Taxable Value_Tally'],
+                            'Tally Taxable Value': round(row['Taxable Value_Tally'], 2),
                             'Difference: Taxable Value': round(row['Taxable Value_Tally'] - row['Taxable Value_GSTR2B'], 2),
                             'GSTR2B IGST': row['IGST_GSTR2B'],
                             'Tally IGST': row['IGST_Tally'],
@@ -311,7 +304,7 @@ if gstr_file and tally_file:
                         # Add S.No to processed sets
                         gstr2b_processed_indices.add(row['S.No_GSTR2B_S5'])
                         tally_processed_indices.add(row['S.No_Tally_S5'])
-            
+
             # Remove duplicate pairings (e.g., if one GSTR2B matches multiple Tally entries with same Inv No but different mismatches)
             sheet5_final = pd.DataFrame(sheet5_records).drop_duplicates(subset=['GSTR2B S.No', 'Tally S.No'], keep='first')
 
@@ -369,7 +362,7 @@ if gstr_file and tally_file:
                 st.dataframe(sheet4_df[['Invoice Number', 'GSTIN of Supplier', 'Difference: Taxable Value']].head(), use_container_width=True)
             else:
                 st.info("No value mismatches found for Sheet 4.")
-            
+
             if not sheet5_final.empty:
                 st.subheader("🔍 Not Matching (Partial Mismatches) Preview")
                 st.dataframe(sheet5_final[['Invoice Number', 'GSTR2B GSTIN', 'Tally GSTIN', 'Mismatch Reason']].head(), use_container_width=True)

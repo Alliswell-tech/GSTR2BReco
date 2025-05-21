@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 from io import BytesIO
-import os # <--- This line is essential to read files from your repository
+import os
 
 st.set_page_config(page_title="GST Reconciliation Tool", layout="wide")
 st.title("🧾 GSTR-2B vs Tally Reconciliation Tool")
@@ -40,39 +40,47 @@ with st.sidebar:
 
     col1, col2 = st.columns(2)
 
-    # --- START OF MODIFIED SECTION FOR GSTR2B TEMPLATE ---
+    # --- Section for GSTR2B Template Download ---
     with col1:
-        gstr2b_template_path = "sample_gstr2b.xlsx" # Updated to your new file name
-        if os.path.exists(gstr2b_template_path): # Check if the file exists in your repo
+        gstr2b_template_path = "sample_gstr2b.xlsx"
+        # Debugging print statement:
+        print(f"Checking for GSTR2B template at: {os.path.abspath(gstr2b_template_path)}")
+        if os.path.exists(gstr2b_template_path):
+            print(f"GSTR2B template found: {gstr2b_template_path}") # Debugging confirmation
             with open(gstr2b_template_path, "rb") as file:
                 st.download_button(
                     label="📄 GSTR2B Template",
                     data=file.read(),
-                    file_name="sample_gstr2b.xlsx", # Make sure this matches your file name
+                    file_name="sample_gstr2b.xlsx",
                     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                 )
         else:
-            st.warning(f"Template file '{gstr2b_template_path}' not found. Ensure it's in your repository.")
-    # --- END OF MODIFIED SECTION FOR GSTR2B TEMPLATE ---
+            print(f"GSTR2B template NOT found: {gstr2b_template_path}") # Debugging error
+            st.warning(f"Template file '{gstr2b_template_path}' not found. Ensure it's in the same directory as your script.")
+    # --- End of GSTR2B Template Section ---
 
-    # --- START OF MODIFIED SECTION FOR TALLY TEMPLATE ---
+    # --- Section for Tally Template Download ---
     with col2:
-        tally_template_path = "sample_tally.xlsx" # Updated to your new file name
-        if os.path.exists(tally_template_path): # Check if the file exists in your repo
+        tally_template_path = "sample_tally.xlsx"
+        # Debugging print statement:
+        print(f"Checking for Tally template at: {os.path.abspath(tally_template_path)}")
+        if os.path.exists(tally_template_path):
+            print(f"Tally template found: {tally_template_path}") # Debugging confirmation
             with open(tally_template_path, "rb") as file:
                 st.download_button(
                     label="📄 Tally Template",
                     data=file.read(),
-                    file_name="sample_tally.xlsx", # Make sure this matches your file name
+                    file_name="sample_tally.xlsx",
                     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                 )
         else:
-            st.warning(f"Template file '{tally_template_path}' not found. Ensure it's in your repository.")
-    # --- END OF MODIFIED SECTION FOR TALLY TEMPLATE ---
+            print(f"Tally template NOT found: {tally_template_path}") # Debugging error
+            st.warning(f"Template file '{tally_template_path}' not found. Ensure it's in the same directory as your script.")
+    # --- End of Tally Template Section ---
 
     st.markdown("---")
     st.markdown("© 2025 Nandeesh Balekoppadaramane")
-    st.caption("Developed with ❤curiosity using Python & Streamlit")
+    st.caption("Developed with curiosity using Python & Streamlit")
 
 # File upload section
 col1, col2 = st.columns(2)
